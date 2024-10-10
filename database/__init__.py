@@ -1,3 +1,6 @@
 from pymongo import MongoClient
+from .db import Database
+import app_config
 
-database = MongoClient("mongodb+srv://nguyenlebaoanh05:D24IvSid0Sykumth@cluster0.wkbdr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+database = Database(app_config.CONST_DATABASE, app_config.CONST_MONGO_URL)
+database.connect()
