@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify, request
 from database.__init__ import database
 from models.user_model import User
-from controllers.user_controller import create_user, login_user
+from controllers.user_controller import create_user, login_user, fetch_users
+from helpers.token_validation import validate_jwt
 
 
 user = Blueprint("user", __name__)
@@ -34,22 +35,36 @@ def add_user():
 
 @user.route('/v0/users/login', methods=['POST'])
 def login():
-    my_body = request.json
+    try: 
+        my_body = request.json
 
-    if 'email' not in my_body:
-        return jsonify({'error': 'Email is needed in the request!'}), 400
-    if 'password' not in my_body:
-        return jsonify({'error': 'Password is needed in the request!'}), 400
+        if 'email' not in my_body:
+            return jsonify({'error': 'Email is needed in the request!'}), 400
+        if 'password' not in my_body:
+            return jsonify({'error': 'Password is needed in the request!'}), 400
+        
+        result = login_user(my_body)
 
-    return login_user(my_body)
+        if result == "Invalid email":
+            return jsonify({'error': 'Invalid email or Password!'}), 400
+        if result == "Invalid password":
+            return jsonify({'error': 'Invalid email or Password!'}), 400
 
+        return login_user(my_body)
+    except:
+        return jsonify({'error': 'Something wrong happened when trying to login user!'}), 500
 
-@user.route('/users', methods=['GET'])
+@user.route('/v0/users/all', methods=['GET'])
 def get_users():
-    users = []
-    for user in database['SCHOOL_PY_PROJECT']['Users'].find():
-        user['_id'] = str(user['_id'])
-        users.append(user)
-    return jsonify(users)
+    try:
+        token = validate_jwt()
+        if token == 400:
+            return jsonify({'error': 'Token is missing in the request!'}), 400
+        if token == 401:
+            return jsonify({'error': 'Invalid authentication token!'}), 401
+        
+        return fetch_users()
+    except:
+        return jsonify({'error': 'Something wrong happened when fetching users!'}), 500
 
 
