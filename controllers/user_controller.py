@@ -71,3 +71,12 @@ def fetch_users():
         return jsonify({'users': users})
     except:
         raise Exception("Error when trying to fetch users!")
+    
+def find_users(user_id):
+    try:
+        collection = database.database[app_config.CONST_USER_COLLECTION]
+        for user in collection.find():
+            if user['_id'] == user_id:
+                return user["name"]
+    except:
+        raise Exception("User is not in the database!")

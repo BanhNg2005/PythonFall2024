@@ -66,5 +66,3 @@ def get_users():
         return fetch_users()
     except:
         return jsonify({'error': 'Something wrong happened when fetching users!'}), 500
-
-
