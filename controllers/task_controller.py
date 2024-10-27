@@ -1,12 +1,7 @@
 from database.__init__ import database
 import app_config
-import bcrypt
-from datetime import datetime, timedelta
 from flask import jsonify
-import jwt
 from bson.objectid import ObjectId
-from collections import namedtuple
-
 
 def create_task(task):
     try:
@@ -79,38 +74,26 @@ def fetch_assigned_to(token):
         raise Exception("Error when trying to fetch tasks assigned to a user!")
     
 def update_task(taskUid, token, done_status):
-    UpdateResult = namedtuple('UpdateResult', ['taskUid', 'modified_count'])
     try:
         collection = database.database[app_config.CONST_TASK_COLLECTION]
+
         current_task = collection.find_one({"_id": ObjectId(taskUid)})
 
         if not current_task:
-            raise Exception("Task not found")
+            return {'error': 'Task not found'}, 404
 
         if token['id'] != current_task['assignedToUid']:
-            raise Exception('Users can only change status when task is assigned to them.')
+            return {'error': 'Unauthorized: Users can only change status when task is assigned to them'}, 403
 
-        # Check if the done status is already the desired value
         if current_task['done'] == done_status:
-            return UpdateResult(taskUid=taskUid, modified_count=0)
+            return {'taskUid': taskUid, 'modified_count': 0}, 200
 
-        new_taskUid = str(ObjectId())
+        collection.update_one({"_id": ObjectId(taskUid)}, {"$set": {"done": done_status}})
 
-        # Create a new document with the new taskUid
-        new_task = current_task.copy()
-        new_task['_id'] = ObjectId(new_taskUid)
-        new_task['done'] = done_status
-
-        # Insert the new document
-        collection.insert_one(new_task)
-
-        # Delete the old document
-        collection.delete_one({"_id": ObjectId(taskUid)})
-
-        return UpdateResult(taskUid=new_taskUid, modified_count=1)
+        return {'taskUid': taskUid}, 200
 
     except:
-        raise Exception("Error when updating task!")
+        return {'error': 'Something went wrong when updating the task'}, 500
 
 def delete_task(taskUid, token):
     try:

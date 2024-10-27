@@ -76,7 +76,7 @@ def find_users(user_id):
     try:
         collection = database.database[app_config.CONST_USER_COLLECTION]
         for user in collection.find():
-            if user['_id'] == user_id:
+            if str(user['_id']) == user_id:
                 return user["name"]
     except:
         raise Exception("User is not in the database!")
