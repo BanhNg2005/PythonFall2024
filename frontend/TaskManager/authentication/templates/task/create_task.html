@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Create a New Task</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" class="border p-4 rounded bg-light">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_title" class="form-label">Title:</label>
+            <input type="text" id="id_title" name="title" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="id_description" class="form-label">Description:</label>
+            <textarea id="id_description" name="description" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="id_assignee_uid" class="form-label">Assign To:</label>
+            <select id="id_assignee_uid" name="assignee_uid" class="form-control" required>
+                <option value="" disabled selected>Select a user</option>
+                {% for user in users %}
+                    <option value="{{ user.userUid }}">{{ user.name }} ({{ user.email }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn custom-button">Create Task</button>
+    </form>
+</div>
+{% endblock %}
