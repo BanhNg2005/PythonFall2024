@@ -3,7 +3,6 @@ import requests
 from django.contrib import messages
 from django.conf import settings
 
-
 # Create your views here.
 
 def login_view(request):
@@ -80,13 +79,12 @@ def create_task_view(request):
 
     if request.method == 'POST':
         # Handle task creation
-        title = request.POST.get('title')
         description = request.POST.get('description')
-        assignee_uid = request.POST.get('assignee_uid')
+        assignedToUid = request.POST.get('assignedToUid')
 
         task_data = {
             'description': description,
-            'assignedToUid': assignee_uid,
+            'assignedToUid': assignedToUid,
         }
 
         response = requests.post(
@@ -95,9 +93,8 @@ def create_task_view(request):
             json=task_data
         )
 
-        if response.status_code == 201:
+        if response.status_code == 200:
             messages.success(request, 'Task created successfully.')
-            return redirect('view_task_created')
         else:
             messages.error(request, 'Failed to create task.')
 
@@ -143,3 +140,76 @@ def view_task_created_view(request):
         'created_tasks': created_tasks,
     }
     return render(request, 'task/view_task_created.html', context)
+
+def update_task_view(request, taskUid):
+    if not request.session.get('token'):
+        return redirect('login')
+
+    # Debugging print statements (optional)
+    print(f"Update Task View called with taskUid: {taskUid}")
+
+    token = request.session['token']
+    headers = {'x-access-token': token, 'Content-Type': 'application/json'}
+
+    api_url = f"{settings.FLASK_API_URL}/tasks/{taskUid}"
+
+    if request.method == 'POST':
+        try:
+            done = request.POST.get('done') == 'on'
+            payload = {'done': done}
+
+            update_response = requests.patch(api_url, headers=headers, json=payload)
+
+            print(f"Update API Response Status Code: {update_response.status_code}") 
+            print(f"Update API Response Content: {update_response.text}") 
+
+            if update_response.status_code == 200:
+                messages.success(request, 'Task updated successfully.')
+                return redirect('view_task_assigned')
+            else:
+                error_msg = update_response.json().get('error', 'Failed to update task.')
+                messages.error(request, error_msg)
+                return redirect('view_task_assigned')
+
+        except requests.RequestException as e:
+            messages.error(request, f'Error updating task: {str(e)}')
+            return redirect('view_task_assigned')
+
+    context = {'taskUid': taskUid}
+    return render(request, 'task/update_task.html', context)
+
+def delete_task_view(request, taskUid):
+    if not request.session.get('token'):
+        return redirect('login')
+
+    token = request.session['token']
+    headers = {'x-access-token': token}
+
+    api_url = f"{settings.FLASK_API_URL}/v1/tasks/{taskUid}"
+
+    if request.method == 'POST':
+        try:
+            delete_response = requests.delete(api_url, headers=headers)
+            if delete_response.status_code == 200:
+                messages.success(request, 'Task deleted successfully.')
+                return redirect('view_task_created')
+            elif delete_response.status_code == 403:
+                error_msg = delete_response.json().get('error', 'You do not have permission to delete this task.')
+                messages.error(request, error_msg)
+                return redirect('view_task_created')
+            elif delete_response.status_code == 404:
+                error_msg = delete_response.json().get('error', 'Task not found.')
+                messages.error(request, error_msg)
+                return redirect('view_task_created')
+            else:
+                error_msg = delete_response.json().get('error', 'Failed to delete task.')
+                messages.error(request, error_msg)
+                return redirect('view_task_created')
+
+        except requests.RequestException as e:
+            messages.error(request, f'Error deleting task: {str(e)}')
+            return redirect('view_task_created')
+
+
+    context = {'taskUid': taskUid}
+    return render(request, 'task/delete_task_confirm.html', context)
