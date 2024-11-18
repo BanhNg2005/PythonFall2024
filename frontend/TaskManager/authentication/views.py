@@ -70,7 +70,6 @@ def create_task_view(request):
     token = request.session.get('token')
     headers = {'x-access-token': token}
 
-    # Fetch all users for the assignment dropdown
     users_response = requests.get(
         f"{settings.FLASK_API_URL}/v0/users/all",
         headers=headers
@@ -78,7 +77,6 @@ def create_task_view(request):
     users = users_response.json().get('users', [])
 
     if request.method == 'POST':
-        # Handle task creation
         description = request.POST.get('description')
         assignedToUid = request.POST.get('assignedToUid')
 
@@ -143,9 +141,6 @@ def update_task_view(request, taskUid):
     if not request.session.get('token'):
         return redirect('login')
 
-    # Debugging print statements (optional)
-    print(f"Update Task View called with taskUid: {taskUid}")
-
     token = request.session['token']
     headers = {'x-access-token': token, 'Content-Type': 'application/json'}
 
@@ -153,7 +148,7 @@ def update_task_view(request, taskUid):
 
     if request.method == 'POST':
         try:
-            done = request.POST.get('done') == 'on'
+            done = request.POST.get('done')
             payload = {'done': done}
 
             update_response = requests.patch(api_url, headers=headers, json=payload)
