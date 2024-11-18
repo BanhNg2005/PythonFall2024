@@ -110,7 +110,6 @@ def view_task_assigned_view(request):
     token = request.session.get('token')
     headers = {'x-access-token': token}
 
-    # Fetch tasks assigned to the current user
     assigned_tasks_response = requests.get(
         f"{settings.FLASK_API_URL}/tasks/assignedto",
         headers=headers
@@ -129,7 +128,6 @@ def view_task_created_view(request):
     token = request.session.get('token')
     headers = {'x-access-token': token}
 
-    # Fetch tasks created by the current user
     created_tasks_response = requests.get(
         f"{settings.FLASK_API_URL}/tasks/createdby",
         headers=headers
@@ -159,9 +157,6 @@ def update_task_view(request, taskUid):
             payload = {'done': done}
 
             update_response = requests.patch(api_url, headers=headers, json=payload)
-
-            print(f"Update API Response Status Code: {update_response.status_code}") 
-            print(f"Update API Response Content: {update_response.text}") 
 
             if update_response.status_code == 200:
                 messages.success(request, 'Task updated successfully.')
