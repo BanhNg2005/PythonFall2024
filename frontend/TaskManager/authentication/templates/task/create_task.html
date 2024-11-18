@@ -16,19 +16,15 @@
     <form method="post" class="border p-4 rounded bg-light">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="id_title" class="form-label">Title:</label>
-            <input type="text" id="id_title" name="title" class="form-control" required>
-        </div>
-        <div class="mb-3">
             <label for="id_description" class="form-label">Description:</label>
             <textarea id="id_description" name="description" class="form-control" rows="3" required></textarea>
         </div>
         <div class="mb-3">
-            <label for="id_assignee_uid" class="form-label">Assign To:</label>
-            <select id="id_assignee_uid" name="assignee_uid" class="form-control" required>
+            <label for="assignedToUid" class="form-label">Assign To:</label>
+            <select id="assignedToUid" name="assignedToUid" class="form-control" required>
                 <option value="" disabled selected>Select a user</option>
                 {% for user in users %}
-                    <option value="{{ user.userUid }}">{{ user.name }} ({{ user.email }})</option>
+                    <option value="{{ user.id }}">{{ user.name }} ({{ user.email }})</option>
                 {% endfor %}
             </select>
         </div>

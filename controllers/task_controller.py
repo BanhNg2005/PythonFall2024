@@ -119,3 +119,4 @@ def delete_task(taskUid, token):
 
     except:
         raise Exception ({'error': 'Something went wrong when deleting the task'})
+

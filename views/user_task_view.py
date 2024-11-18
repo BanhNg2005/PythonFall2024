@@ -58,7 +58,7 @@ def get_assigned_to():
     except:
         return jsonify({'error': 'Something wrong happened when fetching tasks!'}), 500
     
-@task.route('/tasks/<taskUid>', methods=['PATCH'])
+@task.route('/tasks/<taskUid>', methods=['PATCH', 'POST'])
 def update_task_route(taskUid):
     try:
         token = validate_jwt()
